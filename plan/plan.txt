@@ -1,0 +1,470 @@
+$ terraform plan
+module.web_server.module.web_server_mig.data.google_compute_subnetwork.subnet: Refreshing state...
+module.app_server.module.app_server_mig.data.google_compute_subnetwork.subnet: Refreshing state...
+data.google_compute_image.rhel: Refreshing state...
+
+------------------------------------------------------------------------
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # google_project_iam_member.project_owner will be created
+  + resource "google_project_iam_member" "project_owner" {
+      + etag    = (known after apply)
+      + id      = (known after apply)
+      + member  = (known after apply)
+      + project = "test-project"
+      + role    = "roles/owner"
+    }
+
+  # google_service_account.test_sa will be created
+  + resource "google_service_account" "test_sa" {
+      + account_id   = "test-sa"
+      + display_name = "TestService Account"
+      + email        = (known after apply)
+      + id           = (known after apply)
+      + name         = (known after apply)
+      + project      = "test-project"
+      + unique_id    = (known after apply)
+    }
+
+  # module.db.google_sql_database.test["test"] will be created
+  + resource "google_sql_database" "test" {
+      + charset   = (known after apply)
+      + collation = (known after apply)
+      + id        = (known after apply)
+      + instance  = "tf-custom-db"
+      + name      = "test_db"
+      + project   = "test-project"
+      + self_link = (known after apply)
+    }
+
+  # module.db.google_sql_database_instance.test_db will be created
+  + resource "google_sql_database_instance" "test_db" {
+      + connection_name               = (known after apply)
+      + database_version              = "POSTGRES_13"
+      + deletion_protection           = true
+      + encryption_key_name           = (known after apply)
+      + first_ip_address              = (known after apply)
+      + id                            = (known after apply)
+      + ip_address                    = (known after apply)
+      + master_instance_name          = (known after apply)
+      + name                          = "tf-custom-db"
+      + private_ip_address            = (known after apply)
+      + project                       = "test-project"
+      + public_ip_address             = (known after apply)
+      + region                        = "us-east1"
+      + self_link                     = (known after apply)
+      + server_ca_cert                = (known after apply)
+      + service_account_email_address = (known after apply)
+
+      + replica_configuration {
+          + ca_certificate            = (known after apply)
+          + client_certificate        = (known after apply)
+          + client_key                = (known after apply)
+          + connect_retry_interval    = (known after apply)
+          + dump_file_path            = (known after apply)
+          + failover_target           = (known after apply)
+          + master_heartbeat_period   = (known after apply)
+          + password                  = (sensitive value)
+          + ssl_cipher                = (known after apply)
+          + username                  = (known after apply)
+          + verify_server_certificate = (known after apply)
+        }
+
+      + settings {
+          + activation_policy           = (known after apply)
+          + authorized_gae_applications = (known after apply)
+          + availability_type           = "ZONAL"
+          + crash_safe_replication      = (known after apply)
+          + disk_autoresize             = true
+          + disk_size                   = 50
+          + disk_type                   = "PD_SSD"
+          + pricing_plan                = "PER_USE"
+          + replication_type            = (known after apply)
+          + tier                        = "db-custom-4-15360"
+          + user_labels                 = (known after apply)
+          + version                     = (known after apply)
+
+          + backup_configuration {
+              + enabled                        = false
+              + location                       = "us"
+              + point_in_time_recovery_enabled = false
+              + start_time                     = "04:00"
+              + transaction_log_retention_days = (known after apply)
+
+              + backup_retention_settings {
+                  + retained_backups = (known after apply)
+                  + retention_unit   = (known after apply)
+                }
+            }
+
+          + ip_configuration {
+              + ipv4_enabled    = false
+              + private_network = "removed as it is project related"
+            }
+
+          + location_preference {
+              + follow_gae_application = (known after apply)
+              + zone                   = (known after apply)
+            }
+
+          + maintenance_window {
+              + day          = 3
+              + hour         = 3
+              + update_track = "stable"
+            }
+        }
+
+      + timeouts {
+          + create = "5m"
+          + delete = "5m"
+          + update = "5m"
+        }
+    }
+
+  # module.db.google_sql_user.test["test"] will be created
+  + resource "google_sql_user" "test" {
+      + id       = (known after apply)
+      + instance = "tf-custom-db"
+      + name     = "test_user"
+      + password = (sensitive value)
+      + project  = "test-project"
+    }
+
+  # module.app_server.module.app_server_mig.google_compute_instance_group_manager.server_group will be created
+  + resource "google_compute_instance_group_manager" "server_group" {
+      + base_instance_name = "tf-custom-app-mig-vm"
+      + fingerprint        = (known after apply)
+      + id                 = (known after apply)
+      + instance_group     = (known after apply)
+      + name               = "tf-custom-app-mig-vm-group"
+      + operation          = (known after apply)
+      + project            = "test-project"
+      + self_link          = (known after apply)
+      + target_pools       = (known after apply)
+      + target_size        = 1
+      + wait_for_instances = true
+      + zone               = "us-east1-c"
+
+      + named_port {
+          + name = "http"
+          + port = 8080
+        }
+
+      + update_policy {
+          + max_surge_fixed       = 1
+          + max_unavailable_fixed = 0
+          + min_ready_sec         = 120
+          + minimal_action        = "REPLACE"
+          + type                  = "OPPORTUNISTIC"
+        }
+
+      + version {
+          + instance_template = (known after apply)
+          + name              = "default"
+        }
+    }
+
+  # module.app_server.module.app_server_mig.google_compute_instance_template.template will be created
+  + resource "google_compute_instance_template" "template" {
+      + can_ip_forward          = false
+      + id                      = (known after apply)
+      + machine_type            = "n1-standard-8"
+      + metadata                = {
+          + "cluster-size" = "1"
+        }
+      + metadata_fingerprint    = (known after apply)
+      + metadata_startup_script = "echo hi > /test.txt"
+      + name                    = (known after apply)
+      + name_prefix             = "tf-custom-app-mig-vm-template-"
+      + project                 = "test-project"
+      + region                  = "us-east1"
+      + self_link               = (known after apply)
+      + tags                    = [
+          + "tf-custom-app-server",
+          + "tf-custom-ssh",
+        ]
+      + tags_fingerprint        = (known after apply)
+
+      + disk {
+          + auto_delete  = true
+          + boot         = true
+          + device_name  = (known after apply)
+          + disk_size_gb = 30
+          + disk_type    = "pd-standard"
+          + interface    = (known after apply)
+          + mode         = (known after apply)
+          + source_image = "https://www.googleapis.com/compute/v1/projects/test-project/global/images/debian-9"
+          + type         = (known after apply)
+        }
+
+      + network_interface {
+          + name               = (known after apply)
+          + network            = (known after apply)
+          + subnetwork         = "test"
+          + subnetwork_project = "test"
+        }
+
+      + scheduling {
+          + automatic_restart   = true
+          + on_host_maintenance = "MIGRATE"
+          + preemptible         = false
+        }
+
+      + service_account {
+          + email  = (known after apply)
+          + scopes = [
+              + "https://www.googleapis.com/auth/cloud-platform",
+            ]
+        }
+    }
+
+  # module.app_server.module.app_server_mig.google_compute_target_pool.pool[0] will be created
+  + resource "google_compute_target_pool" "pool" {
+      + id               = (known after apply)
+      + instances        = (known after apply)
+      + name             = "tf-custom-app-mig-pool"
+      + project          = "test-project"
+      + region           = "us-east1"
+      + self_link        = (known after apply)
+      + session_affinity = "NONE"
+    }
+
+  # module.web_server.module.glb.google_compute_backend_service.default[0] will be created
+  + resource "google_compute_backend_service" "default" {
+      + connection_draining_timeout_sec = 400
+      + creation_timestamp              = (known after apply)
+      + enable_cdn                      = false
+      + fingerprint                     = (known after apply)
+      + health_checks                   = (known after apply)
+      + id                              = (known after apply)
+      + load_balancing_scheme           = "EXTERNAL"
+      + name                            = "tf-custom-webserver-bs"
+      + port_name                       = "webserver"
+      + project                         = "test-project"
+      + protocol                        = "HTTP"
+      + self_link                       = (known after apply)
+      + session_affinity                = "GENERATED_COOKIE"
+      + timeout_sec                     = 180
+
+      + backend {
+          + balancing_mode        = "RATE"
+          + capacity_scaler       = 1
+          + group                 = (known after apply)
+          + max_rate_per_instance = 100
+          + max_utilization       = 0.8
+        }
+
+      + cdn_policy {
+          + signed_url_cache_max_age_sec = (known after apply)
+
+          + cache_key_policy {
+              + include_host           = (known after apply)
+              + include_protocol       = (known after apply)
+              + include_query_string   = (known after apply)
+              + query_string_blacklist = (known after apply)
+              + query_string_whitelist = (known after apply)
+            }
+        }
+
+      + log_config {
+          + enable      = (known after apply)
+          + sample_rate = (known after apply)
+        }
+    }
+
+  # module.web_server.module.glb.google_compute_global_address.default will be created
+  + resource "google_compute_global_address" "default" {
+      + address            = (known after apply)
+      + creation_timestamp = (known after apply)
+      + id                 = (known after apply)
+      + name               = "tf-custom-webserver-address"
+      + project            = "test-project"
+      + self_link          = (known after apply)
+    }
+
+  # module.web_server.module.glb.google_compute_global_forwarding_rule.https will be created
+  + resource "google_compute_global_forwarding_rule" "https" {
+      + id                    = (known after apply)
+      + ip_address            = (known after apply)
+      + ip_protocol           = (known after apply)
+      + load_balancing_scheme = "EXTERNAL"
+      + name                  = "tf-custom-webserver-https"
+      + port_range            = "443"
+      + project               = "test-project"
+      + self_link             = (known after apply)
+      + target                = (known after apply)
+    }
+
+  # module.web_server.module.glb.google_compute_health_check.default[0] will be created
+  + resource "google_compute_health_check" "default" {
+      + check_interval_sec  = 10
+      + creation_timestamp  = (known after apply)
+      + healthy_threshold   = 1
+      + id                  = (known after apply)
+      + name                = "tf-custom-webserver-hc"
+      + project             = "test-project"
+      + self_link           = (known after apply)
+      + timeout_sec         = 5
+      + type                = (known after apply)
+      + unhealthy_threshold = 10
+
+      + https_health_check {
+          + port         = 443
+          + proxy_header = "NONE"
+          + request_path = "/"
+        }
+    }
+
+  # module.web_server.module.glb.google_compute_target_https_proxy.default will be created
+  + resource "google_compute_target_https_proxy" "default" {
+      + creation_timestamp = (known after apply)
+      + id                 = (known after apply)
+      + name               = "tf-custom-webserver-https-proxy"
+      + project            = "test-project"
+      + proxy_id           = (known after apply)
+      + quic_override      = "NONE"
+      + self_link          = (known after apply)
+      + ssl_certificates   = [
+          + "/tmp/key.pem",
+        ]
+      + url_map            = (known after apply)
+    }
+
+  # module.web_server.module.glb.google_compute_url_map.url_map will be created
+  + resource "google_compute_url_map" "url_map" {
+      + creation_timestamp = (known after apply)
+      + default_service    = (known after apply)
+      + fingerprint        = (known after apply)
+      + id                 = (known after apply)
+      + map_id             = (known after apply)
+      + name               = "tf-custom-webserver"
+      + project            = "test-project"
+      + self_link          = (known after apply)
+
+      + host_rule {
+          + hosts        = [
+              + "*",
+            ]
+          + path_matcher = "allpaths"
+        }
+
+      + path_matcher {
+          + default_service = (known after apply)
+          + name            = "allpaths"
+
+          + path_rule {
+              + paths   = [
+                  + "/",
+                ]
+              + service = (known after apply)
+            }
+        }
+    }
+
+  # module.web_server.module.web_server_mig.google_compute_instance_group_manager.server_group will be created
+  + resource "google_compute_instance_group_manager" "server_group" {
+      + base_instance_name = "tf-custom-web-mig-vm"
+      + fingerprint        = (known after apply)
+      + id                 = (known after apply)
+      + instance_group     = (known after apply)
+      + name               = "tf-custom-web-mig-vm-group"
+      + operation          = (known after apply)
+      + project            = "test-project"
+      + self_link          = (known after apply)
+      + target_pools       = (known after apply)
+      + target_size        = 1
+      + wait_for_instances = true
+      + zone               = "us-east1-c"
+
+      + named_port {
+          + name = "https"
+          + port = 443
+        }
+
+      + update_policy {
+          + max_surge_fixed       = 1
+          + max_unavailable_fixed = 0
+          + min_ready_sec         = 120
+          + minimal_action        = "REPLACE"
+          + type                  = "OPPORTUNISTIC"
+        }
+
+      + version {
+          + instance_template = (known after apply)
+          + name              = "default"
+        }
+    }
+
+  # module.web_server.module.web_server_mig.google_compute_instance_template.template will be created
+  + resource "google_compute_instance_template" "template" {
+      + can_ip_forward          = false
+      + id                      = (known after apply)
+      + machine_type            = "n1-standard-8"
+      + metadata                = {
+          + "cluster-size" = "1"
+        }
+      + metadata_fingerprint    = (known after apply)
+      + metadata_startup_script = "echo hi > /test.txt"
+      + name                    = (known after apply)
+      + name_prefix             = "tf-custom-web-mig-vm-template-"
+      + project                 = "test-project"
+      + region                  = "us-east1"
+      + self_link               = (known after apply)
+      + tags                    = [
+          + "tf-custom-ssh",
+          + "tf-custom-web-server",
+        ]
+      + tags_fingerprint        = (known after apply)
+
+      + disk {
+          + auto_delete  = true
+          + boot         = true
+          + device_name  = (known after apply)
+          + disk_size_gb = 30
+          + disk_type    = "pd-standard"
+          + interface    = (known after apply)
+          + mode         = (known after apply)
+          + source_image = "https://www.googleapis.com/compute/v1/projects/test-project/global/images/debian-9"
+          + type         = (known after apply)
+        }
+
+      + network_interface {
+          + name               = (known after apply)
+          + network            = (known after apply)
+          + subnetwork         = "test"
+          + subnetwork_project = "test"
+        }
+
+      + scheduling {
+          + automatic_restart   = true
+          + on_host_maintenance = "MIGRATE"
+          + preemptible         = false
+        }
+
+      + service_account {
+          + email  = (known after apply)
+          + scopes = [
+              + "https://www.googleapis.com/auth/cloud-platform",
+            ]
+        }
+    }
+
+  # module.web_server.module.web_server_mig.google_compute_target_pool.pool[0] will be created
+  + resource "google_compute_target_pool" "pool" {
+      + id               = (known after apply)
+      + instances        = (known after apply)
+      + name             = "tf-custom-web-mig-pool"
+      + project          = "test-project"
+      + region           = "us-east1"
+      + self_link        = (known after apply)
+      + session_affinity = "NONE"
+    }
+
+Plan: 17 to add, 0 to change, 0 to destroy.
+
+------------------------------------------------------------------------
