@@ -7,7 +7,7 @@
 - set env variable named as "terraform-sa-json-path" with the SA key.
 
 **How to run:-**
-- Go to terrafrom folder.
+- Go to 3-tier/terraform folder.
 - Run "terraform init" to initialize.
 - Run "terraform plan -lock=false -out test-plan.out"
 
